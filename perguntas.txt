@@ -1,0 +1,23 @@
+1:Qual a média de partidas?
+
+2:Qual lado de time(blue/red) foi mais campeão?
+
+3:Abates de dragões mais rapidos?
+
+4:Time com mais vitórias?
+
+5:Quais as 3 maiores Win Streak (sequência de vitorias)?
+
+6:Qual lado teve mais primeira torre?
+
+7:Qual size fez mais objetivo?(Pode ser baron mas talvez ser mais generico seja interessante)
+
+8:Quais as 3 partidas com maior valor de GOLD?
+
+9:Quais os 3+ escolhidos e 3+ banidos?
+
+10:Qual a kill mais rápida (tempo de partida)?
+
+11:Partida com mais kills?
+
+12:Quantos times que fizeram o primeiro barão tiveram a vitória na partida?
