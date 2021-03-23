@@ -1,0 +1,186 @@
+#1---------------------------------------------------------------------------------------
+3 Campeões mais banidos:
+SELECT  ban.`ban_1` as ban,
+ sum(`value_occurrence` ) AS `value_occurrence`  
+FROM    
+(SELECT       `ban_1`,
+COUNT(`ban_1`) AS `value_occurrence` 
+FROM     `ban`
+GROUP BY `ban_1`
+  
+union
+SELECT       `ban_2`,
+             COUNT(`ban_2`) AS `value_occurrence` 
+    FROM     `ban`
+    GROUP BY `ban_2`
+
+ union
+ SELECT       `ban_3`,
+             COUNT(`ban_3`) AS `value_occurrence` 
+    FROM     `ban`
+    GROUP BY `ban_3`
+
+ union
+SELECT       `ban_4`,
+             COUNT(`ban_4`) AS `value_occurrence` 
+    FROM     `ban`
+    GROUP BY `ban_4`
+
+ union
+SELECT       `ban_5`,
+             COUNT(`ban_5`) AS `value_occurrence` 
+    FROM     `ban`
+    GROUP BY `ban_5`
+    ORDER BY `value_occurrence` DESC) as ban
+GROUP BY `ban_1`
+ORDER BY value_occurrence desc
+LIMIT 3 OFFSET 1;
+#2---------------------------------------------------------------------------------------
+3 Campeões mais pickados:
+
+select LANE.Champs,sum(value_occurrence) as value_occurrence
+from
+(select TOP.Champs,sum(`value_occurrence`) as value_occurrence
+from
+    (SELECT       `rTopChamp` as Champs,
+    COUNT(`rTopChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `rTopChamp`
+    union
+    SELECT       `bTopChamp`,
+    COUNT(`bTopChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `bTopChamp`
+    ORDER BY value_occurrence desc) as TOP
+group by Champs
+union
+select JG.JgChamps,sum(`value_occurrence`) as value_occurrence
+from
+    (SELECT       `rJgChamp` as JgChamps,
+    COUNT(`rJgChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `rJgChamp`
+    union
+    SELECT       `bJgChamp`,
+    COUNT(`bJgChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `bJgChamp`
+    ORDER BY value_occurrence desc) as JG
+group by JgChamps
+
+union
+select `MID`.MidChamps,sum(`value_occurrence`) as value_occurrence
+from
+    (SELECT       `rMidChamp` as MidChamps,
+    COUNT(`rMidChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `rMidChamp`
+    union
+    SELECT       `bMidChamp`,
+    COUNT(`bMidChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `bMidChamp`
+    ORDER BY value_occurrence desc) as `MID`
+group by MidChamps
+union
+select ADC.AdcChamps,sum(`value_occurrence`) as value_occurrence
+from
+    (SELECT       `rAdcChamp` as AdcChamps,
+    COUNT(`rAdcChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `rAdcChamp`
+    union
+    SELECT       `bAdcChamp`,
+    COUNT(`bAdcChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `bAdcChamp`
+    ORDER BY value_occurrence desc) as ADC
+group by AdcChamps
+union
+select SUP.SupChamps,sum(`value_occurrence`) as value_occurrence
+from
+    (SELECT       `rSupChamp` as SupChamps,
+    COUNT(`rSupChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `rSupChamp`
+    union
+    SELECT       `bSupChamp`,
+    COUNT(`bSupChamp`) AS `value_occurrence` 
+    FROM     `match`
+    GROUP BY `bSupChamp`
+    ORDER BY value_occurrence desc) as SUP
+group by SupChamps
+) as LANE
+GROUP by Champs
+ORDER BY value_occurrence desc
+limit 3
+#3---------------------------------------------------------------------------------------
+Comparação vitórias lado azul e vermelho:
+SELECT sum(bResults) as vitorias_azul, sum(rResults) as vitorias_vermelho, count(address) as total from `match`;
+#4---------------------------------------------------------------------------------------
+Dragos mais rapidos:
+select case 
+when m.team = 'rDragons' then ma.rTeam 
+when m.team = 'bDragons' then ma.bTeam
+else '-' end as team_dragon ,m.time,m.type from monster m
+INNER JOIN `match` ma
+ON m.address = ma.address
+where m.type in('DRAGON','EARTH_DRAGON','WIND_DRAGON','FIRE_DRAGON','WATER_DRAGON','ELDER_DRAGON')
+order By time asc
+limit 10;
+#5---------------------------------------------------------------------------------------
+Kill mais rapida:
+SELECT * 
+FROM grupo4.kill
+WHERE victim IS NOT NULL and killer not like 'TooEarly'
+ORDER BY time ASC
+limit 1;
+#6---------------------------------------------------------------------------------------
+Lado com mais kill:
+SELECT team, count(id) as total 
+FROM `kill`
+group by team
+order by total desc;
+#6---------------------------------------------------------------------------------------
+Monstros por lado:
+select sum(blue_objectives) as blue_objectives, sum(red_objectives) as red_objectives, sum(total_objectives) as total_objectives from
+(select sum(case when team like'b%' then total_monstros end) as blue_objectives,
+sum(case when team like'r%' then total_monstros end) as red_objectives ,sum(t.total_monstros) as total_objectives
+from (select team,count(team) as total_monstros from monster group by team) as t
+union
+select sum(case when team like'b%' then total_monstros end) as blue_objectives,
+sum(case when team like'r%' then total_monstros end) as red_objectives ,sum(t.total_monstros) as total_objectives
+from (select team,count(team) as total_monstros from structure group by team) as t) as re;
+#7---------------------------------------------------------------------------------------
+Média de gold ao longo da partida:
+select avg(min_10),avg(min_20),avg(min_30),avg(min_40),avg(min_50),avg(min_60)from gold where type = 'goldblue' or 'goldred';
+#8---------------------------------------------------------------------------------------
+Média de tempo das partidas:
+SELECT avg(gamelength) as Media_partidas from `match`;
+#9---------------------------------------------------------------------------------------
+Quantos times que fizeram o primeiro barão tiveram a vitória na partida?
+select concat(7620)as total_partidas,(bl.vitorias_azul+vm.vitorias_vermelho) vitorias_barao,(7620 - (bl.vitorias_azul+vm.vitorias_vermelho))
+as vitorias_sem_barao from 
+(select sum(bResults) as vitorias_azul from `match` m
+    INNER JOIN
+    (select address,min(time) from monster
+    where type = 'BARON_NASHOR' and team like 'bBarons'
+    group by address) AS b
+    on m.address = b.address) as bl
+JOIN (select sum(rResults) as vitorias_vermelho from `match` ma
+    INNER JOIN
+    (select address,min(time) from monster
+    where type = 'BARON_NASHOR' and team like 'rBarons'
+    group by address) AS r
+    on ma.address = r.address) as vm;
+#10---------------------------------------------------------------------------------------
+Time com mais vitórias:
+select mu.team, sum(mu.vitorias) as vitorias_ from (
+select bTeam as team,count(bResults) as vitorias from `match`where bResults = true group by bTeam 
+union
+select rTeam,count(rResults) from `match`where rResults = true group by rTeam 
+order by vitorias desc
+) as mu
+group by mu.team
+order by 'vitorias' desc
+limit 10;
